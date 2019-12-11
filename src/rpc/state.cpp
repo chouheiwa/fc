@@ -48,11 +48,11 @@ request state::start_remote_call( const string& method_name, variants args )
    _awaiting[*request.id] = fc::promise<variant>::ptr( new fc::promise<variant>("json_connection::async_call") );
    return request;
 }
-variant state::wait_for_response( uint64_t request_id )
+variant state::wait_for_response( uint64_t request_id,const microseconds& timeout)
 {
    auto itr = _awaiting.find(request_id);
    FC_ASSERT( itr != _awaiting.end() );
-   return fc::future<variant>( itr->second ).wait();
+   return fc::future<variant>( itr->second ).wait(timeout);
 }
 void state::close()
 {

@@ -8,8 +8,6 @@
 #endif
 
 #ifdef HAVE_READLINE
-# include <readline/readline.h>
-# include <readline/history.h>
 // I don't know exactly what version of readline we need.  I know the 4.2 version that ships on some macs is
 // missing some functions we require.  We're developing against 6.3, but probably anything in the 6.x
 // series is fine

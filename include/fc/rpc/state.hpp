@@ -44,7 +44,7 @@ namespace fc { namespace rpc {
          void    handle_reply( const response& response );
 
          request start_remote_call( const string& method_name, variants args );
-         variant wait_for_response( uint64_t request_id );
+         variant wait_for_response( uint64_t request_id, const microseconds& timeout = microseconds::maximum());
 
          void close();
 

@@ -160,6 +160,7 @@ namespace fc { namespace http {
             {
                idump((message));
                //std::cerr<<"send: "<<message<<"\n";
+                wlog(message);
                auto ec = _ws_connection->send( message );
                FC_ASSERT( !ec, "websocket send failed: ${msg}", ("msg",ec.message() ) );
             }
@@ -649,10 +650,10 @@ namespace fc { namespace http {
    websocket_client::websocket_client( const std::string& ca_filename ):my( new detail::websocket_client_impl() ),smy(new detail::websocket_tls_client_impl( ca_filename )) {}
    websocket_client::~websocket_client(){ }
 
-   websocket_connection_ptr websocket_client::connect( const std::string& uri )
+   websocket_connection_ptr websocket_client::connect( const std::string& uri, fc::microseconds timeout )
    { try {
        if( uri.substr(0,4) == "wss:" )
-          return secure_connect(uri);
+          return secure_connect(uri, timeout);
        FC_ASSERT( uri.substr(0,3) == "ws:" );
 
        // wlog( "connecting to ${uri}", ("uri",uri));
@@ -669,6 +670,7 @@ namespace fc { namespace http {
        });
 
        auto con = my->_client.get_connection( uri, ec );
+       
 
        if( ec ) FC_ASSERT( !ec, "error: ${e}", ("e",ec.message()) );
 
@@ -677,7 +679,7 @@ namespace fc { namespace http {
        return my->_connection;
    } FC_CAPTURE_AND_RETHROW( (uri) ) }
 
-   websocket_connection_ptr websocket_client::secure_connect( const std::string& uri )
+   websocket_connection_ptr websocket_client::secure_connect( const std::string& uri, fc::microseconds timeout )
    { try {
        if( uri.substr(0,3) == "ws:" )
           return connect(uri);
@@ -699,7 +701,7 @@ namespace fc { namespace http {
        if( ec )
           FC_ASSERT( !ec, "error: ${e}", ("e",ec.message()) );
        smy->_client.connect(con);
-       smy->_connected->wait();
+       smy->_connected->wait(timeout);
        return smy->_connection;
    } FC_CAPTURE_AND_RETHROW( (uri) ) }
 
@@ -722,6 +724,7 @@ namespace fc { namespace http {
        {
           FC_ASSERT( !ec, "error: ${e}", ("e",ec.message()) );
        }
+       
        my->_client.connect(con);
        my->_connected->wait();
        return my->_connection;

@@ -52,14 +52,19 @@ websocket_api_connection::websocket_api_connection( fc::http::websocket_connecti
    _connection.closed.connect( [this](){ closed(); } );
 }
 
+void websocket_api_connection::setTimeout(int timeoutM) {
+    this->timeout = milliseconds(timeoutM);
+}
+
 variant websocket_api_connection::send_call(
    api_id_type api_id,
    string method_name,
    variants args /* = variants() */ )
 {
+    
    auto request = _rpc_state.start_remote_call(  "call", {api_id, std::move(method_name), std::move(args) } );
    _connection.send_message( fc::json::to_string(request) );
-   return _rpc_state.wait_for_response( *request.id );
+   return _rpc_state.wait_for_response( *request.id, timeout );
 }
 
 variant websocket_api_connection::send_callback(
@@ -110,7 +115,6 @@ std::string websocket_api_connection::on_message(
                else if( end - start > fc::milliseconds( LOG_LONG_API_WARN_MS ) )
                   wlog( "API call execution time nearing limit. method: ${m} params: ${p} time: ${t}", ("m",call.method)("p",call.params)("t", end - start) );
 #endif
-
                if( call.id )
                {
                   auto reply = fc::json::to_string( response( *call.id, result, "2.0" ) );

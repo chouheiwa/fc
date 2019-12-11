@@ -12,7 +12,7 @@ namespace fc { namespace rpc {
       public:
          websocket_api_connection( fc::http::websocket_connection& c );
          ~websocket_api_connection();
-
+        
          virtual variant send_call(
             api_id_type api_id,
             string method_name,
@@ -23,6 +23,8 @@ namespace fc { namespace rpc {
          virtual void send_notice(
             uint64_t callback_id,
             variants args = variants() ) override;
+       
+       void setTimeout(int timeout);
 
       protected:
          std::string on_message(
@@ -31,6 +33,8 @@ namespace fc { namespace rpc {
 
          fc::http::websocket_connection&  _connection;
          fc::rpc::state                   _rpc_state;
+   private:
+       fc::microseconds timeout = fc::microseconds::maximum();
    };
 
 } } // namespace fc::rpc
